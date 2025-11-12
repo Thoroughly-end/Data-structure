@@ -63,6 +63,10 @@ int main(){
     ofstream out;
     in.open("testcase1.txt");
     out.open("output1.txt");
+    if(!in.is_open() || !out.is_open()) {
+        cout << "IO Exception!!!" << endl;
+        exit(-1);
+    }
 
     int numOftestcase = 0;
     in >> numOftestcase;
