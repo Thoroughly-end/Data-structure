@@ -45,6 +45,7 @@ class CLinkedList {
         }
 
         void add(int order, int num) {
+            // add node at the endl of it
             Node *previous = list.head->prev;
             Node *temp = new Node;
             temp->num = num;
@@ -57,6 +58,7 @@ class CLinkedList {
         }
 
         void remove() {
+            //discard the node
             if(list.head == ptr) {
                 cout << "Detetion of head node not permitted." << endl;
             } else {
@@ -70,6 +72,7 @@ class CLinkedList {
         }
 
         Node* next() {
+            //get next node address
             if(CLinkedList::length() == 0) {
                 return NULL;
             } else {
@@ -87,6 +90,7 @@ class CLinkedList {
                 temp = temp->next;
                 ++count;
             }*/
+            //reduce the time complexcity
             return size;
         }
         Node* Last_remembered() {
@@ -122,6 +126,7 @@ int main() {
         int *arr = new int[num];
         int *result = new int[num];
         for(int j = 0;j < num;++j) {
+            //initialize
             result[j] = -1;
         }
 
