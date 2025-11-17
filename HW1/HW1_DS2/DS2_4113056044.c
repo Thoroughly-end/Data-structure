@@ -41,12 +41,12 @@ int main(){
                 }
             }
         }
-        for(int i = 0;i < Length;i++){
+        /*for(int i = 0;i < Length;i++){
             printf("%d ", *(dp + i));
-        }
-        printf("\n");
+        }*/
+        //printf("\n");
         fprintf(fp_w, "%d\n", *(dp + Length - 1) + 1);
-        printf("%d\n", *(dp + Length - 1) + 1);
+        //printf("%d\n", *(dp + Length - 1) + 1);
         free(dp);
     }
     fclose(fp_r);
