@@ -46,7 +46,6 @@ int main(){
         }
         printf("\n");
         free(dp);
-        free(p);
         fprintf(fp_w, "%d\n", *(dp + Length - 1) + 1);
         printf("%d\n", *(dp + Length - 1) + 1);
     }
