@@ -45,7 +45,6 @@ int main(){
         }
         fprintf(fp_w, "%lld\n", *dp);
         free(dp);
-        free(s);
     }
     fclose(fp_r);
     fclose(fp_w);
