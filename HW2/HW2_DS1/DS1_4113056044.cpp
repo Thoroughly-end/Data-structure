@@ -92,9 +92,11 @@ int main(){
         }
         
         if(stack.isEmpty()) {
-            out << "Yes" << endl;
+            out << "Yes";
+            if(i != numOftestcase - 1) out << endl;
         } else {
-            out << "No" << endl;
+            out << "No";
+            if(i != numOftestcase - 1) out << endl;
         }
         delete [] goods;
     }
