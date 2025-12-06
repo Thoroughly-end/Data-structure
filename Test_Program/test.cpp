@@ -17,12 +17,19 @@ int main(int argc, char *argv[]) {
     }
 
     string outputLine, ansLine;
+
     while (true) {
-        bool outputHasLine = !outputFile.eof();
-        bool ansHasLine = !ansFile.eof();
-        getline(ansFile, ansLine);
-        getline(outputFile, outputLine);
-        if((outputHasLine && !ansHasLine) || (!outputHasLine && ansHasLine)) {
+        bool outputHasLine = static_cast<bool>(getline(ansFile, ansLine));
+        bool ansHasLine = static_cast<bool>(getline(outputFile, outputLine));
+
+        if (!outputLine.empty() && outputLine.back() == '\r') outputLine.pop_back();
+        if (!ansLine.empty() && ansLine.back() == '\r') ansLine.pop_back();
+
+        if (!outputHasLine && !ansHasLine) {
+            break;
+        }
+
+        if(outputHasLine != ansHasLine) {
             if(!(ansLine.empty() || outputLine.empty())) {
                 cout << RED << BOLD << "Fail" << endl;
                 return 0;
@@ -31,25 +38,24 @@ int main(int argc, char *argv[]) {
                 return 0;
             }
         }
+
         stringstream outputStream(outputLine);
         stringstream ansStream(ansLine);
-        string output, ans;
+
         while (true) {
-            bool outputHasWord = !outputStream.eof();
-            bool ansHasWord = !ansStream.eof();
-            if((outputHasWord && !ansHasWord) || (!outputHasWord && ansHasWord)) {
+            string output, ans;
+            bool outputHasNext = static_cast<bool>(outputStream >> output);
+            bool ansHasNext = static_cast<bool>(ansStream >> ans);
+            if(!outputHasNext && !ansHasNext) break;
+
+            if(outputHasNext != ansHasNext) {
                 cout << RED << BOLD << "Fail" << endl;
                 return 0;
             }
-            outputStream >> output;
-            ansStream >> ans;
             //cout << "Comparing: " << output << " and " << ans << endl;
             if (output != ans) {
                 cout << RED << BOLD << "Fail" << endl;
                 return 0;
-            }
-            if (!outputHasWord && !ansHasWord) {
-                break;
             }
         }
         if(!outputHasLine && !ansHasLine) {
