@@ -13,14 +13,14 @@ int main(){
     fscanf(fp_r, "%d ", &T);
     
     for(int repeat = 0;repeat < T;repeat++){
-        char a[201];
+        char a[250];
         char *s = a;
         fgets(s, sizeof(a), fp_r);   //輸入一整行
         int len = 0;
-        if(*(s + strlen(s) - 1) == '\n'){
-            len = strlen(s) - 1;   // fgets會抓到\n
-        } else {
-            len = strlen(s);
+        len = strlen(s);
+        while(len > 0 && (s[len-1] == '\n' || s[len-1] == '\r')) {
+            s[len-1] = '\0';
+            len--;
         }
         long long *dp = (long long *) malloc(sizeof(long long)*(len + 1));
 

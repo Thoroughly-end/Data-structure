@@ -135,6 +135,10 @@ int main() {
 
             int new_power = maxNode->power - minNode->power;
 
+            if(new_power == 0) {
+
+            }
+
             if(min_from == 1) {
                 tamers1->pop(minNode);
             } else {
@@ -156,6 +160,12 @@ int main() {
             } else {
                 if (new_power > currentMinNode->power) {
                     is_safe.push_back(true);
+                } else if (new_power == currentMinNode->power) {
+                    if (maxNode->number > currentMinNode->number) {
+                        is_safe.push_back(true);
+                    } else {
+                        is_safe.push_back(false);
+                    }
                 } else {
                     is_safe.push_back(false);
                 }
@@ -211,9 +221,17 @@ Node* find_min(Node *node1, Node *node2, int *from) {
         if(node1->power < node2->power) {
             minNode = node1;
             *from = 1;
-        } else {
+        } else if(node1->power > node2->power) {
             minNode = node2;
             *from = 2;
+        } else {
+            if(node1->number < node2->number) {
+                minNode = node1;
+                *from = 1;
+            } else {
+                minNode = node2;
+                *from = 2;
+            }
         }
     }
     return minNode;
@@ -235,9 +253,17 @@ Node* find_max(Node *node1, Node *node2, int *from) {
         if(node1->power > node2->power) {
             maxNode = node1;
             *from = 1;
-        } else {
+        } else if (node1->power < node2->power) {
             maxNode = node2;
             *from = 2;
+        } else {
+            if(node1->number < node2->number) {
+                maxNode = node2;
+                *from = 2;
+            } else {
+                maxNode = node1;
+                *from = 1;
+            }
         }
     }
     return maxNode;
