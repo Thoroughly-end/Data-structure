@@ -1,3 +1,4 @@
+#pragma GCC optimize("Ofast")
 #include <iostream>
 #include<fstream>
 #include <vector>
@@ -54,8 +55,8 @@ class BinaryTree {
             preorderHelper(node->right, s);
         }
 
-        vector<int> in, out, fill, drain;
-        int Timer;
+        vector<int> in, out, TreeA, lazyA, TreeB;
+        int Timer, N;
 
         void flattenHelper(Node *node, int& timer) {
             if(node == nullptr) return;
@@ -69,37 +70,65 @@ class BinaryTree {
             out.at(node->num) = timer;
         }
 
-        void timerAdd() {++Timer;}
-        int now() {return Timer;}
+        inline void timerAdd() {++Timer;}
+        inline int now() {return Timer;}
 
-        void updatePour(int& node) {
-            int start = in.at(node);
-            int end = out.at(node);
-            for(int i = start;i <= end;++i) {
-                fill.at(i) = now();
+        void pushDownA(int node) {
+            if (lazyA[node] != 0) {
+                TreeA.at(node << 1) = lazyA.at(node);
+                lazyA.at(node << 1) = lazyA.at(node);
+                TreeA.at(node << 1 | 1) = lazyA.at(node);
+                lazyA.at(node << 1 | 1) = lazyA.at(node);
+                lazyA.at(node) = 0;
             }
         }
-        void updateDrain(int& node) {
-            drain.at(node) = now();
+
+        void updateTreeA(int node, int start, int end, int l, int r, int val) {
+            if (l > end || r < start) return;
+            if (l <= start && end <= r) {
+                TreeA.at(node) = val;
+                lazyA.at(node) = val;
+                return;
+            }
+            pushDownA(node);
+            int mid = (start + end) >> 1;
+            updateTreeA(node << 1, start, mid, l, r, val);
+            updateTreeA(node << 1 | 1, mid + 1, end, l, r, val);
         }
 
-        int getPourTime(int& node) {return fill.at(node);}
-        int getDrainTime(int & node) {
-            int start = in.at(node);
-            int end = out.at(node);
-            int time = 0;
-            for(int i = start;i <= end;++i) {
-                time = max(drain.at(i), time);
+        int queryTreeA(int node, int start, int end, int idx) {
+            if (start == end) return TreeA.at(node);
+            pushDownA(node);
+            int mid = (start + end) / 2;
+            if (idx <= mid) return queryTreeA(node << 1, start, mid, idx);
+            else return queryTreeA(node << 1 | 1, mid + 1, end, idx);
+        }
+
+        void updateTreeB(int node, int start, int end, int idx, int val) {
+            if (start == end) {
+                TreeB.at(node) = val;
+                return;
             }
-            return time;
+            int mid = (start + end) >> 1;
+            if (idx <= mid) updateTreeB(node << 1, start, mid, idx, val);
+            else updateTreeB(node << 1 | 1, mid + 1, end, idx, val);
+            TreeB.at(node) = max(TreeB.at(node << 1), TreeB.at(node << 1 | 1));
+        }
+
+        int queryTreeB(int node, int start, int end, int l, int r) {
+            if (l > end || r < start) return 0;
+            if (l <= start && end <= r) return TreeB.at(node);
+            int mid = (start + end) >> 1;
+            return max(queryTreeB(node << 1, start, mid, l, r), queryTreeB(node << 1 | 1, mid + 1, end, l, r));
         }
 
     public:
         BinaryTree(vector<int>& inorder, vector<int>& preorder) {
             root = constructHelper(inorder, preorder);
 
-            in.resize(inorder.size() + 1);
-            out.resize(inorder.size() + 1);
+            N = inorder.size();
+            in.resize(N + 1);
+            out.resize(N + 1);
             in.at(0) = 0;
             out.at(0) = 0;
 
@@ -107,8 +136,9 @@ class BinaryTree {
             Timer = 0;
             flattenHelper(root, timer);
 
-            fill.assign(inorder.size() + 1, 0);
-            drain.assign(inorder.size() + 1, 0);
+            TreeA.resize(N << 2 | 1, 0);
+            lazyA.resize(N << 2 | 1, 0);
+            TreeB.resize(N << 2 | 1, 0);
 
         }
         ~BinaryTree() {
@@ -125,19 +155,15 @@ class BinaryTree {
         bool operate(operation oper, int node) {
             timerAdd();
             if(oper == pour) {
-                updatePour(node);
+                updateTreeA(1, 1, N, in.at(node), out.at(node), now());
                 return false;
             } else if(oper == sip) {
-                updateDrain(node);
+                updateTreeB(1, 1, N, in.at(node), now());
                 return false;
             } else {
-                int fill_time = getPourTime(node);
-                int drain_time = getDrainTime(node);
-                if(fill_time > drain_time) {
-                    return true;
-                } else {
-                    return false;
-                }
+                int fill_time = queryTreeA(1, 1, N, in.at(node));
+                int drain_time = queryTreeB(1, 1, N, in.at(node), out.at(node));
+                return (fill_time > drain_time);
             }
         }
 };
@@ -145,6 +171,7 @@ class BinaryTree {
 int main() {
     ifstream in("testcase3.txt");
     ofstream out("output3.txt");
+    in.tie(0);
 
     if(!in.is_open() || !out.is_open()) {
         cerr << "FILE IO Exception!!!" << endl;
