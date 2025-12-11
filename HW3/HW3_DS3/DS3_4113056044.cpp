@@ -2,7 +2,6 @@
 #include <iostream>
 #include<fstream>
 #include <vector>
-#include <unordered_map>
 
 using namespace std;
 
@@ -10,68 +9,37 @@ typedef enum {pour, sip, lookup} operation;
 
 class BinaryTree {
     private:
-        typedef struct Node {
-            int num;
-            Node *left, *right;
-            Node(int val) : num(val), left(nullptr), right(nullptr) {}
-        } Node;
-        Node *root;
-
-        unordered_map<int, int> inIndexMap;
-
-        void deleteHelper(Node *node) {
-            if(node == nullptr) return;
-            deleteHelper(node->left);
-            deleteHelper(node->right);
-            delete node;
-        }
-
-        Node* constructHelper(vector<int>& inorder, vector<int>& preorder) {
-            for(int i = 0;i < inorder.size();++i) {
-                inIndexMap[inorder[i]] = i;
+        void constructHelper(vector<int>& inorder, vector<int>& preorder) {
+            vector<int> pos;
+            pos.resize(N + 1);
+            for(int i = 0;i < N; ++i) {
+                pos.at(inorder.at(i)) = i;
             }
-            return buildHelper(inorder, 0, inorder.size() - 1, preorder, 0, preorder.size() - 1);
+            return buildHelper(preorder, pos, 0, 0, N - 1);
         }
 
-        Node* buildHelper(vector<int>& inorder, int inStart, int inEnd, vector<int>& preorder, int preStart, int preEnd) {
-            if (inStart > inEnd || preStart > preEnd) return nullptr;
-            int rootVal = preorder[preStart];
-            Node *currentRoot = new Node(rootVal);
+        void buildHelper(vector<int>& preorder, vector<int>& pos, int preStart, int inStart, int inEnd) {
+            if(inStart > inEnd) return;
+            int rootVal = preorder.at(preStart);
 
-            int inRootIndex = inIndexMap[rootVal];
+            timerAdd();
+            in.at(rootVal) = now();
+
+            int inRootIndex = pos.at(rootVal);
             int sizeOfLeft = inRootIndex - inStart;
 
-            currentRoot->left = buildHelper(inorder, inStart, inRootIndex - 1, preorder, preStart + 1, preStart + sizeOfLeft);
-            currentRoot->right = buildHelper(inorder, inRootIndex + 1, inEnd, preorder, preStart + sizeOfLeft + 1, preEnd);
+            buildHelper(preorder, pos, preStart + 1, inStart, inRootIndex - 1);
+            buildHelper(preorder, pos, preStart + sizeOfLeft + 1, inRootIndex + 1, inEnd);
 
-            return currentRoot;
-        }
-
-        void preorderHelper(Node *node, string *s) {
-            if(node == nullptr) return;
-            *s += to_string(node->num);
-            *s += " ";
-            preorderHelper(node->left, s);
-            preorderHelper(node->right, s);
+            out.at(rootVal) = now();
         }
 
         vector<int> in, out, TreeA, lazyA, TreeB;
         int Timer, N;
 
-        void flattenHelper(Node *node, int& timer) {
-            if(node == nullptr) return;
-
-            ++timer;
-            in.at(node->num) = timer;
-
-            if(node->left != nullptr) flattenHelper(node->left, timer);
-            if(node->right != nullptr) flattenHelper(node->right, timer);
-
-            out.at(node->num) = timer;
-        }
-
         inline void timerAdd() {++Timer;}
         inline int now() {return Timer;}
+        void setTime() {Timer = 0;}
 
         void pushDownA(int node) {
             if (lazyA[node] != 0) {
@@ -124,32 +92,21 @@ class BinaryTree {
 
     public:
         BinaryTree(vector<int>& inorder, vector<int>& preorder) {
-            root = constructHelper(inorder, preorder);
-
             N = inorder.size();
+            Timer = 0;
             in.resize(N + 1);
             out.resize(N + 1);
             in.at(0) = 0;
             out.at(0) = 0;
-
-            int timer = 0;
-            Timer = 0;
-            flattenHelper(root, timer);
+            constructHelper(inorder, preorder);
 
             TreeA.resize(N << 2 | 1, 0);
             lazyA.resize(N << 2 | 1, 0);
             TreeB.resize(N << 2 | 1, 0);
-
+            setTime();
         }
         ~BinaryTree() {
-            deleteHelper(root);
-        }
-
-        string printPreoder() {
-            string s = "";
-            if(root == nullptr) return s;
-            preorderHelper(root, &s);
-            return s;
+            
         }
 
         bool operate(operation oper, int node) {
