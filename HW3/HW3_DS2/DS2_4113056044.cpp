@@ -121,6 +121,6 @@ int main() {
     }
 
     in.close();
-    out.clear();
+    out.close();
     return 0;
 }
